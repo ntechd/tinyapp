@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/ntechd/tinyapp/issues"
   },
-  "homepage": "https://github.com/ntechd/tinyapp#readme"
+  "homepage": "https://github.com/ntechd/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
