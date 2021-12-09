@@ -26,6 +26,16 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const findUserByEmail = (email) => {
+  for(const id in users) {
+    const user = users[id];
+    if(user.email === email) {
+      return user;
+    }
+  }
+  return null;
+}
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -61,13 +71,24 @@ app.post("/register", (req, res) => {
   const user_id = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
+
+  if (!email || !password) {
+    return res.status(400).send("email and password cannot be blank");
+  }
+
+  const user = findUserByEmail(email);
+
+  if(user) {
+    return res.status(400).send("a user already exists with that email")
+  }
+
   users[user_id] = {
     id: user_id,
     email: email,
     password: password
   }
   res.cookie("user_id", user_id);
-  console.log(users);
+  console.log('users', users);
   res.redirect("/urls");
 });
 
