@@ -8,6 +8,19 @@ app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -27,18 +40,35 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+  const user = users[req.cookies["user_id"]];
+  console.log(user);
   const templateVars = { 
-    username: req.cookies["username"],
+    user: user,
     urls: urlDatabase 
   };
   res.render("urls_index", templateVars);
 });
 
 app.get("/register", (req, res) => {
+  const user = users[req.cookies["user_id"]];
   const templateVars = { 
-    username: req.cookies["username"]
+    user: user
   };
   res.render("user_registration", templateVars);
+});
+
+app.post("/register", (req, res) => {
+  const user_id = generateRandomString();
+  const email = req.body.email;
+  const password = req.body.password;
+  users[user_id] = {
+    id: user_id,
+    email: email,
+    password: password
+  }
+  res.cookie("user_id", user_id);
+  console.log(users);
+  res.redirect("/urls");
 });
 
 app.post("/login", (req, res) => {
@@ -47,7 +77,7 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
@@ -71,15 +101,17 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
+  const user = users[req.cookies["user_id"]];
   const templateVars = { 
-    username: req.cookies["username"]
+    user: user
   };
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  const user = users[req.cookies["user_id"]];
   const templateVars = { 
-    username: req.cookies["username"],
+    user: user,
     shortURL: req.params.shortURL, 
     longURL: urlDatabase[req.params.shortURL] 
   };
