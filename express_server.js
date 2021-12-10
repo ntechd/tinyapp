@@ -2,22 +2,22 @@ const express = require("express");
 var cookieParser = require('cookie-parser');
 const app = express();
 app.use(cookieParser());
-const PORT = 8080; // default port 8080
+const PORT = 8080; 
 app.set("view engine", "ejs");
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
 const users = { 
-  "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+  "haobc4": {
+    id: "haobc4", 
+    email: "najmad09@gmail.com", 
+    password: "1234"
   },
- "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
-    password: "dishwasher-funk"
+ "2yx5a7": {
+    id: "2yx5a7", 
+    email: "najma_d00@hotmail.com", 
+    password: "5678"
   }
 }
 
@@ -101,7 +101,24 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
+  const email = req.body.email;
+  const password = req.body.password;
+
+  if (!email || !password) {
+    return res.status(400).send("email and password cannot be blank");
+  }
+
+  const user = findUserByEmail(email);
+  
+  if(!user){
+    return res.status(403).send("a user with that email does not exist")
+  }
+
+  if(user.password !== password) {
+    return res.status(403).send('password does not match')
+  }
+
+  res.cookie('user_id', user.id);
   res.redirect("/urls");
 });
 
@@ -115,8 +132,6 @@ app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
   urlDatabase[shortURL]= longURL;
   res.redirect("/urls/" + shortURL);
-  //console.log(req.body,);  // Logthe POST request body to the console
-  //res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
 
 app.post("/urls/:id", (req, res) => {
