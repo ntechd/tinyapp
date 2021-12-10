@@ -1,15 +1,11 @@
 const express = require("express");
-//var cookieParser = require('cookie-parser');
 var cookieSession = require('cookie-session')
 
 const app = express();
-//app.use(cookieParser());
 app.use(cookieSession({
   name: 'session',
   keys: ["I like potato", "super secret"],
-
-  // Cookie Options
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  maxAge: 24 * 60 * 60 * 1000 
 }))
 const PORT = 8080; 
 app.set("view engine", "ejs");
@@ -18,20 +14,9 @@ const bodyParser = require("body-parser");
 const bcrypt = require('bcryptjs');
 app.use(bodyParser.urlencoded({extended: true}));
 
-/*
-const users = { 
-  "haobc4": {
-    id: "haobc4", 
-    email: "najmad09@gmail.com", 
-    password: "1234"
-  },
- "2yx5a7": {
-    id: "2yx5a7", 
-    email: "najma_d00@hotmail.com", 
-    password: "5678"
-  }
-}
-*/
+
+const { findUserByEmail, urlsForUser } = require("./helpers");
+
 const users = {};
 
 const urlDatabase = {
@@ -46,26 +31,7 @@ const urlDatabase = {
 };
 
 
-const findUserByEmail = (email) => {
-  for(const id in users) {
-    const user = users[id];
-    if(user.email === email) {
-      return user;
-    }
-  }
-  return null;
-}
 
-const urlsForUser = (userID) => {
-  const userUrls = {};
-  for(const id in urlDatabase) {
-    const url = urlDatabase[id];
-    if(url.userID === userID) {
-      userUrls[id] = url.longURL;
-    }
-  }
-  return userUrls;
-}
 
 
 app.get("/urls.json", (req, res) => {
@@ -80,8 +46,8 @@ app.get("/urls", (req, res) => {
     urls: null
   };
   if (user) {
-    const myURLs = urlsForUser(user.id);
-    
+    const myURLs = urlsForUser(user.id, urlDatabase);
+   
     const templateVars = { 
       user: user,
       urls: myURLs
@@ -132,7 +98,7 @@ app.post("/register", (req, res) => {
     return res.status(400).send("email and password cannot be blank");
   }
 
-  const user = findUserByEmail(email);
+  const user = findUserByEmail(email, users);
 
   if (user) {
     return res.status(400).send("a user already exists with that email")
@@ -143,8 +109,6 @@ app.post("/register", (req, res) => {
     email: email,
     password: hashedPassword
   }
-  //console.log(users);
-  //res.cookie("user_id", user_id);
   req.session.user_id = user_id;
   res.redirect("/urls");
 });
@@ -170,7 +134,7 @@ app.post("/login", (req, res) => {
     return res.status(400).send("email and password cannot be blank");
   }
 
-  const user = findUserByEmail(email);
+  const user = findUserByEmail(email, users);
   
   if(!user){
     return res.status(403).send("a user with that email does not exist")
@@ -180,12 +144,10 @@ app.post("/login", (req, res) => {
     return res.status(403).send('password does not match')
   }
   req.session.user_id = user.id;
-  //res.cookie('user_id', user.id);
   res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
- // res.clearCookie("session");
   delete req.session.user_id;
   res.redirect("/urls");
 });
@@ -195,7 +157,7 @@ app.post("/logout", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
   const user_id = req.session.user_id;
-  const urls = urlsForUser(user_id);
+  const urls = urlsForUser(user_id, urlDatabase);
 
   
 
@@ -214,7 +176,7 @@ app.post("/urls/:id", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   const user_id = req.session.user_id;
-  const urls = urlsForUser(user_id);
+  const urls = urlsForUser(user_id, urlDatabase);
 
   console.log(shortURL);
 
@@ -242,7 +204,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const user = users[req.session.user_id];
   if (user) {
     const user_id = user.id;
-    const urls = urlsForUser(user_id);
+    const urls = urlsForUser(user_id, urlDatabase);
     const shortURL = req.params.shortURL;
     if (shortURL in urls) {
       const url = urls[shortURL];
