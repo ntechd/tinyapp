@@ -26,7 +26,7 @@ TinyApp is a full stack web application built with Node and Express that allows 
 ## New URL
 ![Screen Shot 2021-12-10 at 12 59 55 PM](https://user-images.githubusercontent.com/91559579/145621627-316a5aa5-941a-4d28-a802-d9e9b6bd3620.png)
 
-## URL list with Edit and Delete
+## MyURL with Edit and Delete
 ![Screen Shot 2021-12-10 at 1 01 21 PM](https://user-images.githubusercontent.com/91559579/145621678-4cf248dd-a084-4b61-80e5-c33ca4189d69.png)
 
 ## Edit URL
